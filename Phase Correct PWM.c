@@ -1,31 +1,32 @@
 /*
- * TUGAS MODUL 3.c
+ * Phase Correct PWM.c
  * Created: 15/09/2022 23.29.09
- * Author : Kelompok 1
+ * Author : Abdan Subekti
  */ 
-#define F_CPU 16000000L
-#include <avr/io.h>
-#include <util/delay.h>
-#include <avr/interrupt.h>
+#define F_CPU 16000000L // Selecting MCU clock speed in Hertz
+#include <avr/io.h> // Microcontroller i/o library
+#include <util/delay.h> // Delay functions library
+#include <avr/interrupt.h> // Interrupt library
 
-double duty = 50; // Deklarasi variabel duty tipe double
+// Duty cycle variable declaration, use this to change duty cycle percentage
+double duty = 50; 
 
 int main(void)
 {
-	DDRB = (1 << PORTB3); // PORT B3 sebagai output
-	TCCR0 = (1 << WGM00)|(1 << COM01); // Mode phase correct
-	TIMSK = (1 << OCIE0); // Interrupt aktif
+	DDRB = (1 << PORTB3); // Data Direction Register PORT B3 set as output
+	TCCR0 = (1 << WGM00)|(1 << COM01); // Set PWM signal generation mode Phase Correct PWM
+	TIMSK = (1 << OCIE0); // Output Interrupt Compare Enable
 	
-	//OCR0 = (duty/100)*255; // Menghitung nilai OCR
+	sei(); // Global interrupt mask
 	
-	sei(); // Global interrupt
-	
-	TCCR0 |= (1 << CS02)|(1 << CS00); // Prescaler 1024
+	TCCR0 |= (1 << CS02)|(1 << CS00); // Set clock with Prescaler 1024
 	
     while (1) 
     {
-		_delay_ms(2000); // Tunda 2 detik
-		duty++; // Increment 1
+		_delay_ms(2000); // delay 2 seconds
+		duty++; // up increment
+	    
+	    	// When duty variable reach 100, set duty to 50 again
 		if (duty > 100)
 		{
 			duty = 50;
@@ -33,8 +34,8 @@ int main(void)
     }
 }
 
-ISR(TIMER0_COMP_vect) // Interrupt servis rutin timer 0
+ISR(TIMER0_COMP_vect) // Interrupt service routine timer 0
 {
-	OCR0 = (duty/100)*255; // Menghitung nilai OCR
+	OCR0 = (duty/100)*255; // counting OCR
 }
 
